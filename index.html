@@ -677,6 +677,7 @@ $('fileXlsx').addEventListener('change',e=>handleFile(e.target.files[0]));
 function handleFile(file){
   if(!file) return;
   if(!/\.xlsx?$/i.test(file.name)){ toast('⚠ File harus .xlsx (ekspor GSC)','warn'); return; }
+  if(typeof JSZip==='undefined'){ toast('⚠ Library parser belum termuat. Periksa koneksi internet lalu refresh (Ctrl+F5).','warn'); return; }
   toast('📂 Memproses '+file.name+'...');
   const reader=new FileReader();
   reader.onload=async e=>{
