@@ -76,9 +76,54 @@ tr:hover td{background:rgba(56,189,248,.04)}
 .modal-close{float:right;cursor:pointer;color:var(--text3);font-size:1.2rem;background:none;border:none}
 .footer{color:var(--text3);font-size:.72rem;margin-top:24px;text-align:center}
 @media(max-width:760px){ .grid.two{grid-template-columns:1fr} .chart-box{height:200px} }
+
+/* ===== LOGIN OVERLAY ===== */
+.login-overlay{position:fixed;inset:0;z-index:9999;background:radial-gradient(1200px 600px at 20% -10%,rgba(56,189,248,.14),transparent 60%),radial-gradient(1000px 500px at 90% 110%,rgba(124,58,237,.16),transparent 60%),var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:34px 32px;box-shadow:0 25px 80px rgba(0,0,0,.45)}
+.login-card .logo{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.login-card .logo .dot{width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green)}
+.login-card h2{font-size:1.25rem;font-weight:800}
+.login-card .tag{color:var(--text3);font-size:.8rem;margin-bottom:24px}
+.login-card label{display:block;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
+.login-card input[type=password],.login-card input[type=email]{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px 14px;font-size:.9rem;outline:none;transition:.15s}
+.login-card input:focus{border-color:var(--blue)}
+.login-card .row{display:flex;align-items:center;justify-content:space-between;margin:16px 0 20px}
+.login-card .remember{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text2);cursor:pointer}
+.login-card .remember input{accent-color:var(--blue)}
+.login-card .forgot{font-size:.78rem;color:var(--blue);cursor:pointer;background:none;border:none}
+.login-card .forgot:hover{text-decoration:underline}
+.login-card .btn-primary{width:100%;background:linear-gradient(135deg,#2563eb,#7c3aed);border:none;color:#fff;border-radius:10px;padding:13px;font-size:.92rem;font-weight:700;cursor:pointer;transition:.15s}
+.login-card .btn-primary:hover{filter:brightness(1.15)}
+.login-msg{display:none;font-size:.8rem;margin-top:14px;padding:10px 12px;border-radius:8px;text-align:center;font-weight:600}
+.login-msg.err{display:block;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.login-msg.ok{display:block;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.3)}
+.login-sec{font-size:.72rem;color:var(--text3);text-align:center;margin-top:18px;line-height:1.5}
+.btn.logout{position:fixed;top:14px;right:14px;z-index:50;background:var(--panel);border:1px solid var(--line);color:var(--text2);border-radius:10px;padding:8px 14px;font-size:.78rem;font-weight:600;cursor:pointer;transition:.15s}
+.btn.logout:hover{border-color:var(--red);color:var(--red)}
 </style>
 </head>
 <body>
+
+<!-- ===== LOGIN OVERLAY ===== -->
+<div class="login-overlay" id="loginOverlay">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <div class="logo"><span class="dot"></span><h2>Dashboard SEO</h2></div>
+    <div class="tag">Golden Studio · Google Search Console</div>
+    <label for="loginUser">Username / Email</label>
+    <input type="email" id="loginUser" placeholder="nama@goldenstudio.id" required>
+    <label for="loginPass">Password</label>
+    <input type="password" id="loginPass" placeholder="••••••••" required>
+    <div class="row">
+      <label class="remember"><input type="checkbox" id="loginRemember"> Ingat saya</label>
+      <button type="button" class="forgot" id="loginForgot">Lupa password?</button>
+    </div>
+    <button type="submit" class="btn-primary" id="loginBtn">Masuk</button>
+    <div class="login-msg" id="loginMsg"></div>
+    <div class="login-sec" id="loginSec">Default: admin@goldenstudio.id / <span style="color:var(--text2)">golden123</span> — ganti setelah masuk.</div>
+  </form>
+</div>
+<button class="btn logout" id="logoutBtn" style="display:none">⏻ Keluar</button>
+
 <div class="wrap">
   <h1><span class="dot"></span> Dashboard SEO Golden Studio <span style="font-size:.8rem;color:var(--text2);font-weight:500">Google Search Console</span></h1>
   <div class="sub">goldenstudio.odoo.com · Data: 17 Jul – 13 Agu 2026 (28 hari) · Ekspor GSC 16 Agu 2026</div>
@@ -527,6 +572,74 @@ renderKPI(); renderCharts(); renderDevices(); renderCountries(); renderInsights(
 if(typeof XLSX==='undefined'){
   const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'; s.onload=()=>console.log('SheetJS ready'); document.head.appendChild(s);
 }
+</script>
+<script>
+/* ===== LOGIN AUTH ===== */
+(function(){
+  const LS_USER='gs_dash_user', LS_PASS='gs_dash_pass', LS_REMEMBER='gs_dash_remember', SS_SESSION='gs_dash_session';
+  const DEFAULT_USER='admin@goldenstudio.id', DEFAULT_PASS='golden123';
+
+  function getEl(id){return document.getElementById(id);}
+  const overlay=getEl('loginOverlay'), form=getEl('loginForm'), msg=getEl('loginMsg'),
+        userEl=getEl('loginUser'), passEl=getEl('loginPass'), rememberEl=getEl('loginRemember'),
+        logoutBtn=getEl('logoutBtn'), forgotBtn=getEl('loginForgot');
+
+  function setMsg(text,type){ msg.className='login-msg'+(type?' '+type:''); msg.textContent=text||''; }
+  function setLoggedIn(state){
+    if(overlay) overlay.style.display = state?'none':'flex';
+    if(logoutBtn) logoutBtn.style.display = state?'block':'none';
+    if(state){
+      if(userEl) userEl.value=''; if(passEl) passEl.value=''; setMsg('');
+    }
+  }
+
+  // Cek sesi saat load
+  try{
+    if(sessionStorage.getItem(SS_SESSION)==='1' || localStorage.getItem(LS_REMEMBER)==='1'){
+      // Kalau remember=1, sesi lokal dianggap login
+      setLoggedIn(true);
+    } else {
+      setLoggedIn(false);
+    }
+  }catch(e){ setLoggedIn(false); }
+
+  // Submit login
+  if(form) form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const u=(userEl.value||'').trim().toLowerCase(), p=passEl.value||'';
+    const storedUser=(localStorage.getItem(LS_USER)||DEFAULT_USER).toLowerCase();
+    const storedPass=localStorage.getItem(LS_PASS)||DEFAULT_PASS;
+    if(u===storedUser && p===storedPass){
+      try{
+        if(rememberEl.checked){
+          localStorage.setItem(LS_REMEMBER,'1');
+          localStorage.setItem(LS_USER,u);
+          localStorage.setItem(LS_PASS,storedPass);
+        } else {
+          localStorage.removeItem(LS_REMEMBER);
+        }
+        sessionStorage.setItem(SS_SESSION,'1');
+      }catch(err){}
+      setLoggedIn(true);
+    } else {
+      setMsg('❌ Username atau password salah.', 'err');
+      passEl.value=''; passEl.focus();
+    }
+  });
+
+  // Logout
+  if(logoutBtn) logoutBtn.addEventListener('click', function(){
+    try{ sessionStorage.removeItem(SS_SESSION); localStorage.removeItem(LS_REMEMBER); }catch(e){}
+    setLoggedIn(false);
+  });
+
+  // Lupa password -> tampilkan petunjuk (default / cara ganti)
+  if(forgotBtn) forgotBtn.addEventListener('click', function(){
+    const cur=localStorage.getItem(LS_PASS)||DEFAULT_PASS;
+    setMsg('Password saat ini: '+cur+'<br>Ganti: buka DevTools (F12) → Console → ketik: <b>localStorage.setItem("gs_dash_pass","password-baru")</b> lalu refresh.', 'ok');
+    msg.innerHTML='Password saat ini: <b>'+cur+'</b><br>Ganti: DevTools (F12) → Console:<br><code style="font-size:.7rem">localStorage.setItem("gs_dash_pass","password-baru")</code> lalu refresh.';
+  });
+})();
 </script>
 </body>
 </html>
