@@ -432,7 +432,7 @@ async function checkAuth(){
     // Cloudflare / statis: tanpa API -> langsung tampil, mode read-only
     API_MODE='offline';
     hideLogin(); setUser({username:'read-only'}); toast('📡 Mode offline (statis): data dari snapshot', 'warn');
-    if(DATA){ state.data = { meta:DATA.meta, summary:calcSummary(DATA), daily:DATA.daily, queries:DATA.queries, pages:DATA.pages, countries:DATA.countries, devices:DATA.devices, period:state.period }; }
+    if(DATA){ state.data = normalizeData({ meta:DATA.meta, summary:calcSummary(DATA), daily:DATA.daily, queries:DATA.queries, pages:DATA.pages, countries:DATA.countries, devices:DATA.devices, period:state.period }); }
     return;
   }
   const j = await api('/api/login.php');
@@ -444,16 +444,16 @@ async function checkAuth(){
 async function fetchData(){
   if(API_MODE==='offline'){
     if(DATA){
-      state.data = { meta:DATA.meta, summary:calcSummary(DATA), daily:DATA.daily, queries:DATA.queries, pages:DATA.pages, countries:DATA.countries, devices:DATA.devices, period:state.period };
+      state.data = normalizeData({ meta:DATA.meta, summary:calcSummary(DATA), daily:DATA.daily, queries:DATA.queries, pages:DATA.pages, countries:DATA.countries, devices:DATA.devices, period:state.period });
       renderAll();
     }
     return;
   }
   const j = await api('/api/data.php?period='+state.period);
-  if(j.ok){ state.data = j; renderAll(); }
+  if(j.ok){ state.data = normalizeData(j); renderAll(); }
   else if(DATA){
     // fallback offline data
-    state.data = { meta:DATA.meta, summary:calcSummary(DATA), daily:DATA.daily, queries:DATA.queries, pages:DATA.pages, countries:DATA.countries, devices:DATA.devices, period:state.period };
+    state.data = normalizeData({ meta:DATA.meta, summary:calcSummary(DATA), daily:DATA.daily, queries:DATA.queries, pages:DATA.pages, countries:DATA.countries, devices:DATA.devices, period:state.period });
     renderAll();
   }
 }
@@ -462,6 +462,22 @@ function calcSummary(d){
   let clk=0, imp=0, posSum=0, n=0;
   (d.daily||[]).forEach(r=>{ clk+=r.clk; imp+=r.imp; posSum+=r.pos*r.clk; n+=r.clk; });
   return { clk, imp, ctr: imp? +(clk/imp*100).toFixed(2):0, pos: n? +(posSum/n).toFixed(2):0 };
+}
+
+/* Normalisasi key data: GSC tua pakai 'q' utk semua kolom; API pakai p/c/d.
+   Pastikan render selalu dapat field yang benar (p/c/d). */
+function normField(rows, field){
+  return (rows||[]).map(r=>{
+    if(r[field]===undefined && r.q!==undefined){ r[field]=r.q; }
+    return r;
+  });
+}
+function normalizeData(o){
+  if(!o) return o;
+  o.pages     = normField(o.pages,'p');
+  o.countries = normField(o.countries,'c');
+  o.devices   = normField(o.devices,'d');
+  return o;
 }
 
 /* ========== RENDER ========== */
