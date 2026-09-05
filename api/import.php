@@ -28,7 +28,12 @@ $stmt->execute([
 ]);
 
 /* --- replace data lama (periodik baru) --- */
-$db->exec("TRUNCATE TABLE daily; TRUNCATE TABLE queries; TRUNCATE TABLE pages; TRUNCATE TABLE countries; TRUNCATE TABLE devices;");
+// Hanya TRUNCATE tabel yang datanya dikirim (jangan hapus tabel lain)
+if (!empty($data['daily']))    $db->exec("TRUNCATE TABLE daily;");
+if (!empty($data['queries']))  $db->exec("TRUNCATE TABLE queries;");
+if (!empty($data['pages']))    $db->exec("TRUNCATE TABLE pages;");
+if (!empty($data['countries']))$db->exec("TRUNCATE TABLE countries;");
+if (!empty($data['devices']))  $db->exec("TRUNCATE TABLE devices;");
 
 /* --- daily --- */
 if (!empty($data['daily'])) {
@@ -50,7 +55,7 @@ if (!empty($data['queries'])) {
 if (!empty($data['pages'])) {
     $stmt = $db->prepare("INSERT INTO pages (p, clk, imp, ctr, pos) VALUES (?,?,?,?,?)");
     foreach ($data['pages'] as $r) {
-        $stmt->execute([$r['q'], $r['clk'], $r['imp'], $r['ctr'], $r['pos']]);
+        $stmt->execute([$r['p'] ?? ($r['q'] ?? ''), $r['clk'] ?? 0, $r['imp'] ?? 0, $r['ctr'] ?? 0, $r['pos'] ?? 0]);
     }
 }
 
@@ -58,7 +63,7 @@ if (!empty($data['pages'])) {
 if (!empty($data['countries'])) {
     $stmt = $db->prepare("INSERT INTO countries (c, clk, imp, ctr, pos) VALUES (?,?,?,?,?)");
     foreach ($data['countries'] as $r) {
-        $stmt->execute([$r['q'], $r['clk'], $r['imp'], $r['ctr'], $r['pos']]);
+        $stmt->execute([$r['c'] ?? ($r['q'] ?? ''), $r['clk'] ?? 0, $r['imp'] ?? 0, $r['ctr'] ?? 0, $r['pos'] ?? 0]);
     }
 }
 

@@ -706,43 +706,47 @@ async function parseXlsx(buf){
     }
   }
   const sheet = zip.file(/xl\/worksheets\/sheet1\.xml/);
-  if(!sheet) throw new Error('Sheet tidak ditemukan.');
-  const xml = await sheet.async('string');
-  const rows=[]; const re=/<row[^>]*>([\s\S]*?)<\/row>/g; let m;
-  while((m=re.exec(xml))){
-    const cells=[]; const cre=/<c[^>]*?(?:\st="([^"]*)")?[^>]*>([\s\S]*?)<\/c>/g; let cm;
-    while((cm=cre.exec(m[1]))){
-      const t=cm[1]||'n'; let v=cm[2].replace(/<[^>]+>/g,'');
-      if(t==='s') v=shared[parseInt(v)]||v;
-      cells.push(v);
+    if(!sheet) throw new Error('Sheet tidak ditemukan.');
+    const xml = await sheet.async('string');
+    const rows=[]; const re=/<row[^>]*>([\s\S]*?)<\/row>/g; let m;
+    while((m=re.exec(xml))){
+      const cells=[]; const cre=/<c\b([^>]*)>([\s\S]*?)<\/c>/g; let cm;
+      while((cm=cre.exec(m[1]))){
+        const attrs=cm[1], inner=cm[2];
+        const tm=/t="([^"]+)"/.exec(attrs);
+        const t=tm?tm[1]:'n'; let v=inner.replace(/<[^>]+>/g,'');
+        if(t==='s'){ const idx=parseInt(v); v=shared[idx]||v; }
+        cells.push(v);
+      }
+      rows.push(cells);
     }
-    rows.push(cells);
-  }
-  // Detect columns: find header row with 'Kueri'/'Query' and 'Klik'/'Clicks' and 'Tayangan'/'Impressions'
-  let hIdx=-1; const headerMap={q:-1,clk:-1,imp:-1,ctr:-1,pos:-1};
-  for(let i=0;i<rows.length;i++){
-    const r=rows[i].map(x=>String(x).toLowerCase());
-    if(r.some(x=>x.includes('kueri')||x.includes('query')) && r.some(x=>x.includes('klik')||x.includes('click'))){
-      hIdx=i;
-      r.forEach((x,ci)=>{
-        if(x.includes('kueri')||x.includes('query')) headerMap.q=ci;
-        if(x.includes('klik')||x.includes('click')) headerMap.clk=ci;
-        if(x.includes('tayangan')||x.includes('impression')) headerMap.imp=ci;
-        if(x.includes('ctr')) headerMap.ctr=ci;
-        if(x.includes('posisi')||x.includes('position')) headerMap.pos=ci;
-      });
-      break;
+    // Detect columns: find header row with 'Kueri'/'Query' and 'Klik'/'Clicks' and 'Tayangan'/'Impressions'
+    let hIdx=-1; const headerMap={q:-1,clk:-1,imp:-1,ctr:-1,pos:-1};
+    for(let i=0;i<rows.length;i++){
+      const r=rows[i].map(x=>String(x).toLowerCase());
+      if(r.some(x=>x.includes('kueri')||x.includes('query')) && r.some(x=>x.includes('klik')||x.includes('click'))){
+        hIdx=i;
+        r.forEach((x,ci)=>{
+          if(x.includes('kueri')||x.includes('query')) headerMap.q=ci;
+          if(x.includes('klik')||x.includes('click')) headerMap.clk=ci;
+          if(x.includes('tayangan')||x.includes('impression')) headerMap.imp=ci;
+          if(x.includes('ctr')) headerMap.ctr=ci;
+          if(x.includes('posisi')||x.includes('position')) headerMap.pos=ci;
+        });
+        break;
+      }
     }
+    if(hIdx<0){ throw new Error('Format file tidak dikenali (butuh kolom Kueri & Klik).'); }
+    const queries=[];
+    for(let i=hIdx+1;i<rows.length;i++){
+      const r=rows[i];
+      const q=r[headerMap.q]; if(!q) continue;
+      let ctr = r[headerMap.ctr]!==undefined && r[headerMap.ctr]!=='' ? +r[headerMap.ctr] : 0;
+      if(ctr <= 1) ctr = ctr*100; // GSC export: 0.0777 = 7.77%
+      queries.push({ q:String(q).trim(), clk:+r[headerMap.clk]||0, imp:+r[headerMap.imp]||0, ctr:Math.round(ctr*100)/100, pos:+r[headerMap.pos]||0 });
+    }
+    return { meta:{source:'goldenstudio.odoo.com', export:new Date().toISOString().slice(0,10), sites:1}, daily:[], queries, pages:[], countries:[], devices:[] };
   }
-  if(hIdx<0){ throw new Error('Format file tidak dikenali (butuh kolom Kueri & Klik).'); }
-  const queries=[];
-  for(let i=hIdx+1;i<rows.length;i++){
-    const r=rows[i];
-    const q=r[headerMap.q]; if(!q) continue;
-    queries.push({ q:String(q).trim(), clk:+r[headerMap.clk]||0, imp:+r[headerMap.imp]||0, ctr:+r[headerMap.ctr]||0, pos:+r[headerMap.pos]||0 });
-  }
-  return { meta:{source:'goldenstudio.odoo.com', export:new Date().toISOString().slice(0,10), sites:1}, daily:[], queries, pages:[], countries:[], devices:[] };
-}
 
 /* ========== INIT ========== */
 (async function init(){
