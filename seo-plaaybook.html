@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEO Playbook — Golden Studio</title>
+  <style>
+    /* ========== CSS VARIABLES ========== */
+    :root {
+      --bg: #0f1117; --bg2: #161822; --bg3: #1c1e2e; --bg4: #252738;
+      --border: #2e3148; --text1: #e4e6f0; --text2: #9397b2; --text3: #5e6280;
+      --blue: #3b82f6; --green: #34d399; --amber: #f59e0b; --red: #ef4444;
+      --violet: #a78bfa; --pink: #f472b6; --cyan: #22d3ee;
+      --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,.3);
+      --sidebar-w: 260px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text1);
+      display: flex; min-height: 100vh; line-height: 1.6;
+    }
+
+    /* ========== SIDEBAR ========== */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--bg2); border-right: 1px solid var(--border);
+      position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto;
+      z-index: 100; transition: transform .3s;
+    }
+    .sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); }
+    .sidebar-header .logo { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+    .sidebar-header .logo span { font-size:24px; }
+    .sidebar-header .logo b { font-size:16px; color:var(--blue); }
+    .sidebar-header p { font-size:11px; color:var(--text3); }
+    .sidebar nav { padding: 12px 10px; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 10px; text-decoration: none;
+      color: var(--text2); font-size: 13.5px; font-weight: 500;
+      transition: background .15s, color .15s; margin-bottom: 2px;
+    }
+    .sidebar nav a:hover { background: var(--bg3); color: var(--text1); }
+    .sidebar nav a.active { background: rgba(59,130,246,.15); color: var(--blue); }
+    .sidebar nav a .icon { font-size: 16px; width: 22px; text-align: center; }
+    .sidebar nav .divider { height:1px; background:var(--border); margin:8px 14px; }
+    .progress-wrap { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .progress-wrap small { color:var(--text3); font-size:11px; display:block; margin-bottom:6px; }
+    .progress-bar { height:6px; background:var(--bg4); border-radius:3px; overflow:hidden; }
+    .progress-bar i { display:block; height:100%; background:linear-gradient(90deg,var(--blue),var(--green)); border-radius:3px; transition:width .5s; }
+
+    /* ========== MAIN ========== */
+    .main { margin-left: var(--sidebar-w); flex:1; padding: 0; }
+    .header {
+      position: sticky; top:0; z-index: 50; background: rgba(15,17,23,.85);
+      backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
+      padding: 16px 32px; display: flex; align-items: center; gap: 16px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; flex:1; }
+    .search-box {
+      background: var(--bg3); border:1px solid var(--border); border-radius:10px;
+      padding: 8px 14px; color: var(--text1); font-size:13px; width:280px;
+      outline: none; transition: border-color .2s;
+    }
+    .search-box:focus { border-color: var(--blue); }
+    .btn {
+      padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 600; transition: all .15s;
+    }
+    .btn-primary { background:var(--blue); color:#fff; }
+    .btn-primary:hover { filter:brightness(1.15); }
+    .btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); }
+    .btn-ghost:hover { background:var(--bg3); color:var(--text1); }
+
+    .content { padding: 28px 32px 60px; max-width: 960px; }
+
+    /* ========== CHAPTER ========== */
+    .chapter {
+      margin-bottom: 40px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .chapter-head {
+      padding: 20px 24px; cursor: pointer; display: flex; align-items: center;
+      gap: 14px; transition: background .15s; user-select: none;
+    }
+    .chapter-head:hover { background: var(--bg3); }
+    .chapter-head .ch-num {
+      width: 40px; height: 40px; border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-weight: 700;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .chapter-head .ch-info { flex: 1; }
+    .chapter-head .ch-info h3 { font-size: 15px; font-weight: 700; }
+    .chapter-head .ch-info p { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .chapter-head .ch-toggle {
+      font-size: 18px; color: var(--text3); transition: transform .25s;
+    }
+    .chapter.open .ch-toggle { transform: rotate(180deg); }
+    .chapter-body {
+      max-height: 0; overflow: hidden; transition: max-height .4s ease;
+    }
+    .chapter.open .chapter-body { max-height: 8000px; }
+    .chapter-content { padding: 0 24px 24px; }
+    .chapter-content h4 {
+      font-size: 14px; font-weight: 700; color: var(--blue);
+      margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    }
+    .chapter-content h4:first-child { margin-top: 0; }
+    .chapter-content p { font-size: 13.5px; color: var(--text2); margin-bottom: 12px; line-height: 1.7; }
+    .chapter-content ul { padding-left: 20px; margin-bottom: 12px; }
+    .chapter-content li { font-size: 13.5px; color: var(--text2); margin-bottom: 6px; line-height: 1.6; }
+    .chapter-content li b { color: var(--text1); }
+    .chapter-content strong { color: var(--text1); }
+    .chapter-content em { color: var(--green); font-style: normal; font-weight: 600; }
+    .chapter-content code {
+      background: var(--bg4); padding: 2px 8px; border-radius: 6px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 12px; color: var(--cyan);
+    }
+
+    /* Tips card */
+    .tip {
+      background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25);
+      border-radius: 12px; padding: 14px 18px; margin: 12px 0;
+    }
+    .tip.warn { background:rgba(245,158,11,.08); border-color:rgba(245,158,11,.25); }
+    .tip.danger { background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.25); }
+    .tip b { font-size: 13px; }
+    .tip p { margin: 4px 0 0; font-size: 12.5px; }
+
+    /* Checklist */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      background: var(--bg3); border-radius: 10px; margin-bottom: 6px;
+      cursor: pointer; transition: background .15s;
+    }
+    .checklist li:hover { background: var(--bg4); }
+    .checklist li.done { opacity: .5; }
+    .checklist li.done .cl-text { text-decoration: line-through; }
+    .cl-check {
+      width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0; transition: all .15s;
+    }
+    .checklist li.done .cl-check {
+      background: var(--green); border-color: var(--green); color: #fff;
+    }
+    .cl-text { font-size: 13px; color: var(--text2); flex:1; }
+    .cl-tag { font-size:11px; padding:2px 8px; border-radius:6px; font-weight:600; }
+    .cl-tag.must { background:rgba(239,68,68,.15); color:var(--red); }
+    .cl-tag.should { background:rgba(245,158,11,.15); color:var(--amber); }
+    .cl-tag.nice { background:rgba(59,130,246,.15); color:var(--blue); }
+
+    /* Table */
+    .doc-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:13px; }
+    .doc-table th { text-align:left; padding:10px 14px; background:var(--bg4); color:var(--text1); font-weight:600; border-bottom:2px solid var(--border); }
+    .doc-table td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text2); }
+    .doc-table tr:hover td { background:var(--bg3); }
+
+    /* Template block */
+    .template-block {
+      background: var(--bg); border:1px solid var(--border); border-radius:12px;
+      padding: 16px 20px; margin: 12px 0; font-family: 'Cascadia Code', monospace;
+      font-size: 12.5px; color: var(--text2); line-height: 1.7; white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    .template-block .hl { color: var(--blue); font-weight: 600; }
+    .template-block .gr { color: var(--green); }
+    .template-block .am { color: var(--amber); }
+    .template-block .cm { color: var(--text3); }
+
+    /* KPI grid */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 12px; margin: 14px 0; }
+    .kpi-card {
+      background: var(--bg3); border-radius: 12px; padding: 16px;
+      border-left: 3px solid var(--blue);
+    }
+    .kpi-card.green { border-left-color: var(--green); }
+    .kpi-card.amber { border-left-color: var(--amber); }
+    .kpi-card.violet { border-left-color: var(--violet); }
+    .kpi-card .kl { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+    .kpi-card .kv { font-size: 22px; font-weight: 700; color: var(--text1); margin: 4px 0; }
+    .kpi-card .kd { font-size: 11.5px; color: var(--text2); }
+
+    /* Mobile */
+    @media (max-width: 860px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .header { padding: 14px 16px; }
+      .content { padding: 20px 16px 40px; }
+      .search-box { width: 100%; }
+    }
+
+    /* Print */
+    @media print {
+      body { background: #fff; color: #222; }
+      .sidebar, .header, .ch-toggle, .btn { display: none !important; }
+      .main { margin-left: 0; }
+      .chapter { border: 1px solid #ddd; page-break-inside: avoid; }
+      .chapter-body { max-height: none !important; }
+      .chapter-content { color: #444; }
+      .chapter-content strong, .chapter-head h3 { color: #000; }
+      .chapter-content p, .chapter-content li { color: #444; }
+    }
+
+    /* Highlight search */
+    mark { background: rgba(245,158,11,.3); color: var(--text1); border-radius: 2px; padding: 0 2px; }
+  </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo"><span>📘</span><b>SEO Playbook</b></div>
+    <p>Golden Studio · Panduan Lengkap SEO &amp; Konten</p>
+  </div>
+  <nav id="sidebarNav">
+    <a href="#ch-overview" class="active"><span class="icon">📊</span> Overview</a>
+    <a href="#ch-audit"><span class="icon">🔍</span> Audit SEO</a>
+    <a href="#ch-onpage"><span class="icon">📄</span> On-Page SEO</a>
+    <a href="#ch-content"><span class="icon">✍️</span> Strategi Konten</a>
+    <a href="#ch-keyword"><span class="icon">🔑</span> Riset Keyword</a>
+    <a href="#ch-local"><span class="icon">📍</span> Local SEO</a>
+    <a href="#ch-technical"><span class="icon">⚙️</span> Technical SEO</a>
+    <a href="#ch-offpage"><span class="icon">🔗</span> Off-Page SEO</a>
+    <a href="#ch-social"><span class="icon">📱</span> Social Media</a>
+    <a href="#ch-calendar"><span class="icon">📅</span> Kalender Konten</a>
+    <a href="#ch-measurement"><span class="icon">📈</span> Pengukuran</a>
+    <a href="#ch-templates"><span class="icon">📋</span> Template &amp; Tools</a>
+    <div class="divider"></div>
+    <a href="#ch-checklist"><span class="icon">✅</span> Master Checklist</a>
+  </nav>
+  <div class="progress-wrap">
+    <small>Progres Playbook: <span id="progressText">0%</span></small>
+    <div class="progress-bar"><i id="progressBar" style="width:0%"></i></div>
+  </div>
+</aside>
+
+<!-- ========== MAIN ========== -->
+<div class="main">
+  <div class="header">
+    <button class="btn btn-ghost" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none" id="menuBtn">☰</button>
+    <h1>📘 SEO Playbook — Golden Studio</h1>
+    <input type="text" class="search-box" placeholder="🔍 Cari topik... (Ctrl+K)" id="searchInput">
+    <button class="btn btn-ghost" onclick="window.print()">🖨 Print</button>
+    <button class="btn btn-primary" onclick="resetChecklist()">↻ Reset</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== CHAPTER 0: OVERVIEW ===== -->
+    <div class="chapter open" id="ch-overview">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(59,130,246,.15);color:var(--blue)">0</div>
+        <div class="ch-info"><h3>Overview — Mengapa SEO Penting untuk Golden Studio</h3><p>Visi, target, dan cara kerja playbook ini</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>🎯 Tentang Playbook Ini</h4>
+        <p>Playbook ini adalah panduan praktis — bukan teori akademik. Setiap bab berisi <strong>langkah konkret</strong> yang bisa langsung diterapkan untuk meningkatkan <em>visibilitas</em>, <em>trafik organik</em>, dan <em>konversi</em> Golden Studio di Google Search.</p>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kl">Klik Bulanan</div><div class="kv" id="ovKlik">—</div><div class="kd">Target: 500+ / bulan</div></div>
+          <div class="kpi-card green"><div class="kl">Tayangan</div><div class="kv" id="ovImp">—</div><div class="kd">Target: 25.000+ / bulan</div></div>
+          <div class="kpi-card amber"><div class="kl">CTR Rata-rata</div><div class="kv" id="ovCtr">—</div><div class="kd">Target: &gt;3%</div></div>
+          <div class="kpi-card violet"><div class="kl">Posisi Rata-rata</div><div class="kv" id="ovPos">—</div><div class="kd">Target: &lt;5</div></div>
+        </div>
+
+        <h4>📋 Bagaimana Playbook Ini Bekerja</h4>
+        <ul>
+          <li><strong>Baca berurutan</strong> dari Bab 1 → 12, atau <strong>langsung ke topik</strong> yang dibutuhkan lewat sidebar.</li>
+          <li>Setiap bab punya <strong>checklist</strong> — centang setelah diterapkan. Progres tersimpan otomatis di browser.</li>
+          <li><strong>Template & Tools</strong> di Bab 12 bisa langsung dipakai untuk riset keyword, kalender konten, dan audit.</li>
+          <li>Target spesifik Golden Studio: <em>fotografi profesional di Cikarang, Bekasi</em> — semua contoh disesuaikan.</li>
+        </ul>
+
+        <div class="tip">
+          <b>💡 Tips Penggunaan</b>
+          <p>Tekan <code>Ctrl+K</code> untuk search cepat. Klik <code>🖨 Print</code> untuk versi PDF. Centang item checklist — progres tersimpan otomatis meski browser ditutup.</p>
+        </div>
+
+        <h4>🏢 Profil Bisnis</h4>
+        <table class="doc-table">
+          <tr><th style="width:40%">Aspek</th><th>Detail</th></tr>
+          <tr><td><strong>Nama</strong></td><td>Golden Studio</td></tr>
+          <tr><td><strong>Lokasi</strong></td><td>Cikarang, Bekasi, Jawa Barat, Indonesia</td></tr>
+          <tr><td><strong>Layanan</strong></td><td>Foto profil, foto wisuda, foto produk, foto keluarga, foto pernikahan, studio rental</td></tr>
+          <tr><td><strong>Website</strong></td><td>goldenstudio.odoo.com</td></tr>
+          <tr><td><strong>Target Audiens</strong></td><td>Mahasiswa, profesional, UMKM, keluarga di area Cikarang-Bekasi-Karawang</td></tr>
+          <tr><td><strong>Pesaing Utama</strong></td><td>Foto studio lain di Cikarang & Bekasi + layanan freelance fotografer</td></tr>
+        </table>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 1: AUDIT ===== -->
+    <div class="chapter" id="ch-audit">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(239,68,68,.15);color:var(--red)">1</div>
+        <div class="ch-info"><h3>Audit SEO Awal</h3><p>Situs audit — temukan masalah yang menghambat ranking</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>🔍 Apa Itu SEO Audit?</h4>
+        <p>SEO audit adalah pemeriksaan menyeluruh terhadap website untuk menemukan <strong>masalah teknis</strong>, <strong>konten</strong>, dan <strong>off-page</strong> yang menghambat ranking di Google. Audit harus dilakukan secara berkala (minimal <em>1x per bulan</em>).</p>
+
+        <h4>🛠 Tools yang Dibutuhkan</h4>
+        <table class="doc-table">
+          <tr><th>Tool</th><th>Fungsi</th><th>Biaya</th></tr>
+          <tr><td><strong>Google Search Console</strong></td><td>Performance data, indexing, errors</td><td>Gratis ✓</td></tr>
+          <tr><td><strong>Google Analytics 4</strong></td><td>Trafil user behavior, konversi</td><td>Gratis ✓</td></tr>
+          <tr><td><strong>Google PageSpeed Insights</strong></td><td>Core Web Vitals, performa loading</td><td>Gratis ✓</td></tr>
+          <tr><td><strong>Ahrefs / SEMrush</strong></td><td>Backlink audit, competitor analysis</td><td>Berbayar</td></tr>
+          <tr><td><strong>Screaming Frog</strong></td><td>Crawl technical issues</td><td>Gratis ≤500 URL</td></tr>
+        </table>
+
+        <h4>📊 Interpretasi Data GSC (Dashboard Ini)</h4>
+        <p>Gunakan dashboard SEO untuk memantau performa. Perhatikan metrik ini:</p>
+        <ul>
+          <li><strong>CTR rendah (&lt;2%)</strong> → Judul/meta description perlu optimasi. Klik perlu lebih menarik.</li>
+          <li><strong>Posisi tinggi (&gt;10) tapi banyak tayangan</strong> → Konten relevan tapi kurang kompetitif. Perlu perkuat konten & backlink.</li>
+          <li><strong>Banyak klik di branded query</strong> → Bagus, brand awareness kuat. Sekarang fokus non-brand keywords.</li>
+          <li><strong>CTR tinggi tapi posisi rendah</strong> → Potensi besar! Naikkan posisi = klik naik drastis.</li>
+        </ul>
+
+        <div class="tip warn">
+          <b>⚠️ Red Flags — Perlu Perhatian Segera</b>
+          <p>CTR &lt;1% untuk keyword branded ("golden studio"). Jika ini terjadi, kemungkinan judul meta atau featured snippet pesaing lebih menarik.</p>
+        </div>
+
+        <h4>✅ Audit Checklist</h4>
+        <ul class="checklist" data-chapter="audit">
+          <li data-id="audit-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Export data GSC 3 bulan terakhir, upload ke dashboard ini</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="audit-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Identifikasi 10 kueri dengan tayangan tinggi tapi CTR rendah</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="audit-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Cek halaman 404 & error di GSC Coverage Report</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="audit-4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Uji kecepatan semua halaman utama via PageSpeed Insights</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="audit-5" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Cek mobile-friendliness (80%+ traffic dari HP)</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="audit-6" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Buat daftar 10 URL terbaik berdasarkan klik+posisi</span><span class="cl-tag nice">Opsional</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 2: ON-PAGE ===== -->
+    <div class="chapter" id="ch-onpage">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(52,211,153,.15);color:var(--green)">2</div>
+        <div class="ch-info"><h3>On-Page SEO</h3><p>Optimasi elemen di dalam halaman — judul, deskripsi, konten, struktur</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>📌 Title Tag — Paling Penting</h4>
+        <p>Title tag adalah hal pertama yang dilihat user di Google. Ini menentukan apakah mereka klik atau skip.</p>
+        <div class="template-block"><span class="cm">// Formula Title Tag Golden Studio:</span>
+<span class="hl">[Layanan]</span> + <span class="gr">[Lokasi]</span> | <span class="am">Golden Studio</span>
+
+<span class="cm">// Contoh:</span>
+Foto Profesional <span class="gr">Cikarang</span> — Harga Mulai 50rb | <span class="am">Golden Studio</span>
+Studio Foto <span class="gr">Bekasi</span> untuk Wisuda & Prewedding | <span class="am">Golden Studio</span>
+Sewa Studio Foto <span class="gr">Cikarang</span> — Full Backdrop & Pencahayaan | <span class="am">Golden Studio</span></div>
+
+        <div class="tip">
+          <b>💡 Aturan Title Tag</b>
+          <p>Panjang optimal: <strong>50-60 karakter</strong>. Selalu sisipkan keyword utama di awal. Sertakan lokasi (Cikarang/Bekasi) untuk local SEO. Gunakan angka atau harga untuk meningkatkan CTR.</p>
+        </div>
+
+        <h4>📝 Meta Description — Iklan Gratis</h4>
+        <p>Meta description tidak langsung mempengaruhi ranking, tapi <strong>menentukan CTR</strong>. Ini "iklan" Anda di Google.</p>
+        <div class="template-block"><span class="cm">// Formula Meta Description:</span>
+<span class="hl">[Problem/Apa yang dicari]</span> + <span class="gr">[Solusi/Social proof]</span> + <span class="am">[CTA]</span>
+
+<span class="cm">// Contoh (maks 155 karakter):</span>
+Cari studio foto profesional di <span class="gr">Cikarang</span>? Golden Studio sediakan foto wisuda, profil, produk, keluarga. <span class="gr">1000+ klien puas.</span> <span class="am">Book sekarang!</span></div>
+
+        <h4>🏗 Struktur Heading (H1-H6)</h4>
+        <ul>
+          <li><strong>H1</strong> — 1 per halaman, berisi keyword utama (contoh: "Foto Profesional Cikarang — Golden Studio")</li>
+          <li><strong>H2</strong> — Sub-topik utama (contoh: "Layanan Kami", "Harga Foto Wisuda")</li>
+          <li><strong>H3</strong> — Detail sub-topik (contoh: "Paket Foto Keluarga", "Paket Foto Produk")</li>
+          <li><strong>H4-H6</strong> — Jarang diperlukan, gunakan untuk struktur konten panjang</li>
+        </ul>
+
+        <h4>🖼 Gambar — Optimasi & Alt Text</h4>
+        <ul>
+          <li>Gunakan format <strong>WebP</strong> atau <strong>JPG compressed</strong> (maks 200KB per gambar)</li>
+          <li>Nama file deskriptif: <code>foto-wisuda-cikarang-golden-studio.webp</code> (bukan <code>IMG_20260901.jpg</code>)</li>
+          <li>Alt text harus deskriptif: <em>"Contoh foto wisuda di Golden Studio Cikarang — jasa fotografi profesional"</em></li>
+          <li>Tambahkan caption/teks di bawah gambar untuk konteks SEO</li>
+        </ul>
+
+        <h4>🔗 Internal Linking</h4>
+        <p>Setiap halaman harus punya minimal <strong>3 internal link</strong> ke halaman lain di website. Ini membantu Google memahami struktur situs dan menyebarkan "link juice".</p>
+        <ul>
+          <li>Halaman "Layanan Foto Wisuda" → link ke "Portofolio Wisuda", "Harga", "Cara Order"</li>
+          <li>Blog post "Tips Foto Profil LinkedIn" → link ke "Layanan Foto Profil"</li>
+          <li>Homepage → link ke semua halaman layanan utama</li>
+        </ul>
+
+        <h4>✅ On-Page Checklist</h4>
+        <ul class="checklist" data-chapter="onpage">
+          <li data-id="op-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Set title tag unik untuk setiap halaman (50-60 karakter, ada keyword + lokasi)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="op-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Set meta description unik per halaman (140-155 karakter, ada CTA)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="op-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Struktur heading benar: 1x H1, H2 untuk sub-topik, H3 untuk detail</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="op-4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Semua gambar punya alt text deskriptif + nama file SEO-friendly</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="op-5" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Minimal 3 internal link per halaman</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="op-6" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Keyword utama muncul di: title, H1, 100 kata pertama, 1x di body</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="op-7" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">URL pendek & deskriptif: /foto-wisuda-cikarang (bukan /page?id=123)</span><span class="cl-tag should">Penting</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 3: CONTENT STRATEGY ===== -->
+    <div class="chapter" id="ch-content">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(167,139,250,.15);color:var(--violet)">3</div>
+        <div class="ch-info"><h3>Strategi Konten</h3><p>Rencana konten yang menarik trafik organik & konversi</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>🎯 Konten Bucket — 5 Jenis Konten SEO</h4>
+        <p>Setiap konten harus masuk ke salah satu kategori ini. Campuran ideal: <em>40% Edukasi, 30% Inspirasi, 20% Lokal, 10% Promosi</em>.</p>
+
+        <table class="doc-table">
+          <tr><th>Bucket</th><th>Tujuan</th><th>Contoh Topik</th><th>Freq</th></tr>
+          <tr><td><strong>🎓 Edukasi</strong></td><td>Jawab pertanyaan calon klien</td><td>"Tips Foto Profil LinkedIn yang Profesional", "Cara Pose saat Foto Keluarga"</td><td>2x/bulan</td></tr>
+          <tr><td><strong>✨ Inspirasi</strong></td><td>Tunjukkan portofolio & gaya</td><td>"Inspirasi Foto Wisuda 2026", "Tema Foto Keluarga yang Trending"</td><td>1x/bulan</td></tr>
+          <tr><td><strong>📍 Lokal</strong></td><td>Ranking untuk keyword lokal</td><td>"Studio Foto Terbaik Cikarang", "Foto Profesional Bekasi & Sekitarnya"</td><td>2x/bulan</td></tr>
+          <tr><td><strong>🎁 Promosi</strong></td><td>Konversi langsung</td><td="Paket Hemat Foto Wisuda, Promo Bulan Agustus</td><td>1x/bulan</td></tr>
+          <tr><td><strong>📊 Portfolio</strong></td><td>Social proof</td><td>Hasil foto klien, testimoni, before-after</td><td>Ongoing</td></tr>
+        </table>
+
+        <h4>📝 Content Quality Checklist</h4>
+        <ul>
+          <li><strong>Panjang minimal 800 kata</strong> untuk blog post (ideal: 1.000-2.000 kata)</li>
+          <li><strong>Gunakan paragraf pendek</strong> — maks 3-4 baris per paragraf</li>
+          <li><strong>Sisipkan gambar asli</strong> — minimal 1 gambar per 300 kata</li>
+          <li><strong>Gunakan bullet points</strong> untuk informasi berulang</li>
+          <li><strong>Tambahkan CTA</strong> (Call to Action) di setiap konten</li>
+          <li><strong>Update konten lama</strong> — Google suka fresh content. Revisi setiap 6 bulan</li>
+        </ul>
+
+        <h4>💡 30 Ide Konten untuk Golden Studio</h4>
+        <table class="doc-table">
+          <tr><th>#</th><th>Judul</th><th>Bucket</th><th>Keyword Utama</th></tr>
+          <tr><td>1</td><td>10 Tips Foto Profil LinkedIn yang Profesional</td><td>🎓 Edukasi</td><td>foto profil linkedin cikarang</td></tr>
+          <tr><td>2</td><td>Panduan Lengkap Foto Wisuda 2026 — Harga & Tips</td><td>🎓 Edukasi</td><td>foto wisuda cikarang bekasi</td></tr>
+          <tr><td>3</td><td>Studio Foto Terbaik di Cikarang — Review Lengkap</td><td>📍 Lokal</td><td>studio foto cikarang</td></tr>
+          <tr><td>4</td><td>Cara Pose saat Foto Keluarga — Panduan untuk Pemula</td><td>🎓 Edukasi</td><td>foto keluarga profesional</td></tr>
+          <tr><td>5</td><td> Inspirasi Foto Produk untuk Toko Online (Shopee/Tokopedia)</td><td>🎓 Edukasi</td><td>foto produk tokopedia</td></tr>
+          <tr><td>6</td><td>Harga Jasa Foto di Cikarang 2026 — Perbandingan</td><td>📍 Lokal</td><td>harga foto cikarang</td></tr>
+          <tr><td>7</td><td>Perbedaan Foto Studio vs Outdoor — Mana yang Cocok?</td><td>🎓 Edukasi</td><td>foto studio vs outdoor</td></tr>
+          <tr><td>8</td><td>Portofolio: 50 Foto Wisuda Terbaik Golden Studio</td><td>✨ Inspirasi</td><td>foto wisuda keren</td></tr>
+          <tr><td>9</td><td>Sewa Studio Foto di Bekasi — Fasilitas & Harga</td><td>📍 Lokal</td><td>sewa studio foto bekasi</td></tr>
+          <tr><td>10</td><td>Promo Paket Foto Profil — Mulai Rp50.000</td><td>🎁 Promosi</td><td>paket foto profil murah</td></tr>
+        </table>
+
+        <div class="tip">
+          <b>💡 Strategi Keyword Agresif</b>
+          <p>Untuk bisnis lokal, target keyword dengan <strong>"+ lokasi"</strong>: "foto wisuda cikarang", "studio foto bekasi", "jasa fotografer karawang". Volume pencarian rendah tapi <em>konversi tinggi</em> karena sangat relevan.</p>
+        </div>
+
+        <h4>✅ Content Checklist</h4>
+        <ul class="checklist" data-chapter="content">
+          <li data-id="ct-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Buat daftar 30 ide konten dari tabel di atas</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ct-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Tulis 1 blog post minggu ini (mulai dari topik paling dicari)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ct-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Siapkan minimal 5 foto asli (portofolio) untuk konten visual</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="ct-4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Buat CTA konsisten di setiap konten (WhatsApp, form, atau telepon)</span><span class="cl-tag should">Penting</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 4: KEYWORD RESEARCH ===== -->
+    <div class="chapter" id="ch-keyword">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(245,158,11,.15);color:var(--amber)">4</div>
+        <div class="ch-info"><h3>Riset Keyword</h3><p>Temukan keyword yang tepat — volume, intent, dan kompetisi</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>🔑 Apa Itu Keyword Research?</h4>
+        <p>Riset keyword adalah proses menemukan <strong>kata/frasa</strong> yang diketik orang di Google saat mencari jasa seperti Golden Studio. Tujuannya: pahami apa yang dicari audiens, buat konten yang menjawab kebutuhan mereka.</p>
+
+        <h4>🎯 Tipe Keyword untuk Golden Studio</h4>
+        <table class="doc-table">
+          <tr><th>Tipe</th><th>Contoh</th><th>Intent</th><th>Prioritas</th></tr>
+          <tr><td><strong>Transactional</strong></td><td>"foto wisuda cikarang harga", "sewa studio foto bekasi"</td><td>Siap booking</td><td>🔴 Tinggi</td></tr>
+          <tr><td><strong>Informational</strong></td><td>"tips pose foto profil", "cara foto produk yang bagus"</td><td>Mencari info</td><td>🟡 Sedang</td></tr>
+          <tr><td><strong>Navigational</strong></td><td>"golden studio cikarang", "golden studio foto"</td><td>Cari brand</td><td>🟢 Pertahankan</td></tr>
+          <tr><td><strong>Local</strong></td><td>"studio foto terdekat cikarang", "fotografer bekasi"</td><td>Cari lokasi</td><td>🔴 Tinggi</td></tr>
+          <tr><td><strong>Long-tail</strong></td><td>"harga foto wisuda 2026 di cikarang untuk 2 orang"</td><td>Sangat spesifik</td><td>🟢 Mudah ranking</td></tr>
+        </table>
+
+        <h4>🛠 Cara Riset Keyword (Tools Gratis)</h4>
+        <ol style="padding-left:20px; margin-bottom:12px;">
+          <li style="font-size:13.5px; color:var(--text2); margin-bottom:8px"><strong style="color:var(--text1)">Google Autocomplete</strong> — Ketik "foto wisuda cikarang" di Google, catat saran dropdown. Itu keyword yang benar-benar dicari!</li>
+          <li style="font-size:13.5px; color:var(--text2); margin-bottom:8px"><strong style="color:var(--text1)">People Also Ask</strong> — Di hasil Google, scroll ke bagian "Orang juga bertanya". Itu ide konten + FAQ.</li>
+          <li style="font-size:13.5px; color:var(--text2); margin-bottom:8px"><strong style="color:var(--text1)">Google Related Searches</strong> — Di bagian bawah hasil pencarian, ada "Related searches" — ini keyword turunan.</li>
+          <li style="font-size:13.5px; color:var(--text2); margin-bottom:8px"><strong style="color:var(--text1)">GSC Dashboard Ini</strong> — Cek tab "Kueri" di dashboard ini. Filter kueri dengan 100+ tayangan tapi CTR rendah — itu potensi besar.</li>
+          <li style="font-size:13.5px; color:var(--text2); margin-bottom:8px"><strong style="color:var(--text1)">Ubersuggest (gratis 3x/hari)</strong> — Cek search volume & keyword difficulty.</li>
+        </ol>
+
+        <h4>📋 Template Riset Keyword</h4>
+        <div class="template-block"><span class="cm">// Isi tabel ini untuk setiap keyword yang Anda target:</span>
+
+Keyword:        <span class="hl">[keyword yang dicari]</span>
+Volume/bulan:    <span class="gr">[estimasi pencarian]</span>
+KD (Difficulty): <span class="am">[Mudah/Sedang/Sulit]</span>
+Intent:          [Transactional/Informational/Local]
+Halaman target:  <span class="gr">[URL yang akan dioptimasi]</span>
+Konten type:     [Blog/Landing Page/Portofolio]
+
+<span class="cm">// Contoh:</span>
+Keyword:        foto wisuda cikarang
+Volume/bulan:    ~200
+KD:              Mudah (lokal)
+Intent:          Transactional
+Halaman target:  /layanan/foto-wisuda
+Konten type:     Landing page + portofolio</div>
+
+        <h4>✅ Keyword Research Checklist</h4>
+        <ul class="checklist" data-chapter="keyword">
+          <li data-id="kr-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Buat daftar 20-30 keyword dari Google Autocomplete + GSC dashboard ini</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="kr-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Kategorikan: Transactional, Informational, Local, Long-tail</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="kr-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Prioritaskan: transactional & local keywords dulu (ROI tertinggi)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="kr-4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Setiap keyword harus punya 1 halaman target yang spesifik</span><span class="cl-tag should">Penting</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 5: LOCAL SEO ===== -->
+    <div class="chapter" id="ch-local">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(34,211,238,.15);color:var(--cyan)">5</div>
+        <div class="ch-info"><h3>Local SEO — Dominate Cikarang & Bekasi</h3><p>Ranking di pencarian lokal: Google Maps, "near me", kota/kabupaten</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>📍 Mengapa Local SEO Paling Penting?</h4>
+        <p>Sebagai bisnis fisik di Cikarang, <strong>47% pencarian Google</strong> punya intent lokal. Ketika seseorang mengetik "studio foto terdekat" atau "foto wisuda cikarang", Google menampilkan <strong>Local Pack</strong> (3 bisnis di atas hasil biasa). Masuk ke Local Pack = trafik & konversi jauh lebih tinggi.</p>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kl">Target Google Maps</div><div class="kv">Top 3</div><div class="kd">Local Pack Cikarang</div></div>
+          <div class="kpi-card green"><div class="kl">Google Reviews</div><div class="kv">50+</div><div class="kd">Rating ≥ 4.8 bintang</div></div>
+          <div class="kpi-card amber"><div class="kl">NAP Consistency</div><div class="kv">100%</div><div class="kd">Konsisten di semua direktori</div></div>
+          <div class="kpi-card violet"><div class="kl">Local Citations</div><div class="kv">20+</div><div class="kd">Listing di direktori lokal</div></div>
+        </div>
+
+        <h4>📍 Google Business Profile (GBP) — Langkah Wajib</h4>
+        <p>GBP (dulunya Google My Business) adalah <strong>aset #1</strong> untuk local SEO. Ini yang muncul di Google Maps.</p>
+        <ul>
+          <li><strong>Verifikasi profil</strong> — klaim bisnis di <code>business.google.com</code></li>
+          <li><strong>Lengkapi 100%</strong>: nama, alamat, jam buka, kategori (Photographer, Photo Studio), no. HP, website</li>
+          <li><strong>Foto berkualitas</strong>: upload minimal 25 foto (interior, hasil foto, tim)</li>
+          <li><strong>Post mingguan</strong>: gunakan GBP Posts untuk promo, tips, portofolio</li>
+          <li><strong>Review management</strong>: minta review dari setiap klien (target 50+ review)</li>
+          <li><strong>Q&A</strong>: jawab pertanyaan yang masuk dengan detail & keyword-rich</li>
+        </ul>
+
+        <div class="tip">
+          <b>💡 Tips Review GBP</b>
+          <p>Setelah sesi foto, kirim WhatsApp ke klien: <em>"Halo Kak, terima kasih sudah pakai jasa Golden Studio! Kalau puas, boleh kasih review Google ya 🙏 <a style='color:var(--green)' href='#'>(link GBP review)</a>"</em>. Review baru = ranking naik.</p>
+        </div>
+
+        <h4>📍 NAP Consistency (Name, Address, Phone)</h4>
+        <p>pastikan informasi NAP <strong>IDENTIK</strong> di semua platform:</p>
+        <div class="template-block"><span class="cm">// Contoh NAP Golden Studio — gunakan YANG SAMA persis:</span>
+
+<span class="hl">Nama:</span> Golden Studio
+<span class="hl">Alamat:</span> [Alamat lengkap], Cikarang, Bekasi, Jawa Barat
+<span class="hl">Telepon:</span> 0851-5520-2151
+<span class="hl">Website:</span> goldenstudio.odoo.com</div>
+
+        <h4>📍 Direktori Lokal yang WAJIB Didftar</h4>
+        <table class="doc-table">
+          <tr><th>Direktori</th><th>Prioritas</th><th>Catatan</th></tr>
+          <tr><td><strong>Google Business Profile</strong></td><td>🔴 Wajib</td><td>Verifikasi + lengkapi 100%</td></tr>
+          <tr><td><strong>Google Maps</strong></td><td>🔴 Wajib</td><td>Otomatis dari GBP</td></tr>
+          <tr><td><strong>Waze / Waze for Business</strong></td><td>🔴 Wajib</td><td>Gratis, banyak dipakai di Indonesia</td></tr>
+          <tr><td><strong>Facebook Business Page</strong></td><td>🟡 Penting</td><td>Sertakan alamat, jam, website</td></tr>
+          <tr><td><strong>Instagram Business</strong></td><td>🟡 Penting</td><td>Location tag di setiap post</td></tr>
+          <tr><td><strong>YellowPages / Tomapedia</strong></td><td>🟢 Bagus</td><td>Directori bisnis Indonesia</td></tr>
+          <tr><td><strong>Foursquare</strong></td><td>🟢 Bagus</td><td>Untuk tambah citation</td></tr>
+        </table>
+
+        <h4>✅ Local SEO Checklist</h4>
+        <ul class="checklist" data-chapter="local">
+          <li data-id="ls-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Klaim & verifikasi Google Business Profile</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ls-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Lengkapi GBP 100%: nama, alamat, jam, kategori, HP, website, foto</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ls-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Upload minimal 25 foto ke GBP (interior, hasil, tim)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ls-4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Daftar Waze for Business (gratis)</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="ls-5" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">NAP konsisten di semua platform (copy-paste yang sama)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ls-6" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Minta review Google dari 10 klien pertama</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ls-7" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Post di GBP minimal 1x/minggu (promo, tips, portofolio)</span><span class="cl-tag should">Penting</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 6: TECHNICAL SEO ===== -->
+    <div class="chapter" id="ch-technical">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(239,68,68,.15);color:var(--red)">6</div>
+        <div class="ch-info"><h3>Technical SEO</h3><p>Performa website: kecepatan, mobile, struktur, crawlability</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>⚡ Core Web Vitals — Target Google</h4>
+        <p>Google menggunakan metrik ini untuk ranking. Semua harus "Hijau" (baik):</p>
+        <table class="doc-table">
+          <tr><th>Metric</th><th>Target</th><th>Apa Ini</th></tr>
+          <tr><td><strong>LCP</strong> (Largest Contentful Paint)</td><td><strong>&lt;2.5 detik</strong></td><td>Waktu konten utama muncul</td></tr>
+          <tr><td><strong>FID</strong> (First Input Delay)</td><td><strong>&lt;100ms</strong></td><td>Respon saat user pertama klik</td></tr>
+          <tr><td><strong>CLS</strong> (Cumulative Layout Shift)</td><td><strong>&lt;0.1</strong></td><td>Seberapa stabil layout saat loading</td></tr>
+        </table>
+
+        <h4>🔧 Quick Wins — Tingkatkan Kecepatan</h4>
+        <ul>
+          <li><strong>Compress semua gambar</strong> → pakai WebP atau TinyPNG (target &lt;200KB per gambar)</li>
+          <li><strong>Enable caching</strong> → browser cache &lt;1 minggu untuk aset statis</li>
+          <li><strong>Minify CSS & JS</strong> → hapus whitespace, gunakan minified version</li>
+          <li><strong>Lazy loading</strong> → gambar baru load saat user scroll ke bawah</li>
+          <li><strong>CDN</strong> → gunakan Cloudflare untuk cache global</li>
+        </ul>
+
+        <h4>📱 Mobile-First Indexing</h4>
+        <p>Google sekarang menggunakan <strong>versi mobile</strong> dari website untuk indexing. Pastikan:</p>
+        <ul>
+          <li>Website responsif di semua ukuran layar</li>
+          <li>Teks cukup besar (min 16px) — tidak perlu zoom</li>
+          <li>Tombol & link cukup besar untuk diklik dengan jari</li>
+          <li>Tidak ada horizontal scroll (geser ke kanan)</li>
+          <li>Pop-up tidak menghalangi konten utama</li>
+        </ul>
+
+        <div class="tip warn">
+          <b>⚠️ Cek Mobile di HP Beneran</b>
+          <p>Jangan hanya cek di DevTools Chrome. Buka website di HP Anda sendiri — scroll, tap, zoom. Rasakan apakah nyaman dipakai. Jika tidak nyaman untuk Anda, tidak nyaman untuk klien juga.</p>
+        </div>
+
+        <h4>🗺 Sitemap & Robots.txt</h4>
+        <ul>
+          <li><strong>Sitemap XML</strong> → kirim ke Google Search Console (opsional untuk website kecil, tapi membantu)</li>
+          <li><strong>Robots.txt</strong> → pastikan tidak memblokir halaman penting dari crawling</li>
+          <li><strong>HTTPS</strong> → wajib! Jika belum, enable di hosting/Cloudflare</li>
+          <li><strong>Canonical URL</strong> → atur kanonik untuk hindiri duplikat konten</li>
+        </ul>
+
+        <h4>✅ Technical SEO Checklist</h4>
+        <ul class="checklist" data-chapter="technical">
+          <li data-id="ts-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Cek PageSpeed Insights — semua halaman target hijau (&gt;90 mobile)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ts-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Compress semua gambar ke WebP, max 200KB</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ts-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Website responsif — cek di HP asli, bukan hanya DevTools</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ts-4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">HTTPS aktif di seluruh halaman</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="ts-5" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Submit sitemap ke Google Search Console</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="ts-6" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Fix semua error di GSC "Pages" → "Indexed" dan "Not indexed"</span><span class="cl-tag should">Penting</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 7: OFF-PAGE ===== -->
+    <div class="chapter" id="ch-offpage">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(59,130,246,.15);color:var(--blue)">7</div>
+        <div class="ch-info"><h3>Off-Page SEO & Backlink</h3><p>Membangun otoritas website dari luar — link, mentions, PR</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>🔗 Apa Itu Backlink?</h4>
+        <p>Backlink adalah <strong>link dari website lain ke website Anda</strong>. Google menganggap backlink sebagai "vote of confidence". Semakin banyak backlink berkualitas, semakin tinggi ranking.</p>
+
+        <div class="tip">
+          <b>💡 Kualitas &gt; Kuantitas</b>
+          <p>1 backlink dari website kampus atau media lokal Bekasi <strong>jauh lebih berharga</strong> daripada 100 backlink dari direktori spam. Fokus pada relevance dan authority.</p>
+        </div>
+
+        <h4>🛠 Strategi Backlink untuk Golden Studio</h4>
+        <table class="doc-table">
+          <tr><th>Strategi</th><th>Difficulty</th><th>Contoh</th></tr>
+          <tr><td><strong>Google Business Profile</strong></td><td>Mudah</td><td>Sudah wajib (lihat Local SEO)</td></tr>
+          <tr><td><strong>Directori Bisnis Lokal</strong></td><td>Mudah</td><td>YellowPages, Tomapedia, Foursquare</td></tr>
+          <tr><td><strong>Social Media Profiles</strong></td><td>Mudah</td><td>Facebook, Instagram, TikTok — sertakan website</td></tr>
+          <tr><td><strong>Guest Post Blog</strong></td><td>Sedang</td><td>Tulis tips foto di blog kampus/majalah lokal</td></tr>
+          <tr><td><strong>Kerjasama Vendor</strong></td><td>Sedang</td><td>Dekorator pernikahan, wedding organizer → tukar link</td></tr>
+          <tr><td><strong>Konten Viral/Shareable</strong></td><td>Sedang</td><td>Infografis "Tips Foto", tutorial → blog lain share</td></tr>
+          <tr><td><strong>Press Release Lokal</strong></td><td>Sulit</td><td>Jadi berita di media lokal Bekasi</td></tr>
+        </table>
+
+        <h4>🤝 Quick Win: Link dari Klien & Partner</h4>
+        <ul>
+          <li><strong>Klien bisnis</strong> → minta link di website mereka: "Foto produk oleh Golden Studio"</li>
+          <li><strong>Wedding organizer</strong> → tukar link: "Rekomendasi studio foto untuk undangan pernikahan"</li>
+          <li><strong>Kampus/universitas</strong> → sponsor foto wisuda → link dari website kampus</li>
+          <li><strong>Komunitas lokal</strong> → posting di komunitas Cikarang/Bekasi dengan link ke portofolio</li>
+        </ul>
+
+        <h4>✅ Off-Page Checklist</h4>
+        <ul class="checklist" data-chapter="offpage">
+          <li data-id="op-bl-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Daftar di 5 direktori lokal (YellowPages, Tomapedia, dll)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="op-bl-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Minta link dari 3 klien bisnis (tolong mention Golden Studio di website mereka)</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="op-bl-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Hubungi 2 wedding organizer untuk tukar link</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="op-bl-4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Share 1 konten blog ke komunitas Facebook/WhatsApp Cikarang</span><span class="cl-tag nice">Opsional</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 8: SOCIAL MEDIA ===== -->
+    <div class="chapter" id="ch-social">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(244,114,182,.15);color:var(--pink)">8</div>
+        <div class="ch-info"><h3>Social Media & Content Distribution</h3><p>Instagram, TikTok, Facebook — amplifikasi konten & branding</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>📱 Strategi Social Media Golden Studio</h4>
+        <p>Social media bukan langsung mempengaruhi SEO, tapi <strong>membangun awareness</strong>, mengarahkan trafik, dan menciptakan <strong>brand searches</strong> yang mempengaruhi ranking.</p>
+
+        <table class="doc-table">
+          <tr><th>Platform</th><th>Prioritas</th><th>Konten</th><th>Frekuensi</th></tr>
+          <tr><td><strong>Instagram</strong></td><td>🔴 #1</td><td>Before/after, portofolio, behind the scenes</td><td>3-4x/minggu</td></tr>
+          <tr><td><strong>TikTok</strong></td><td>🔴 #1</td><td>Behind the scenes, tips foto, transformation reels</td><td>2-3x/minggu</td></tr>
+          <tr><td><strong>Facebook</strong></td><td>🟡 #2</td><td>Event, promo, review klien, share blog</td><td>2-3x/minggu</td></tr>
+          <tr><td><strong>WhatsApp Business</strong></td><td>🔴 #1</td><td>Catalog, quick reply, broadcast promo</td><td>Ongoing</td></tr>
+        </table>
+
+        <h4>📝 Content Pillars untuk Social Media</h4>
+        <ul>
+          <li><strong>📸 Portfolio</strong> (30%) — hasil foto terbaik, before/after, variasi gaya</li>
+          <li><strong>🎬 Behind the Scenes</strong> (25%) — proses syuting, setup studio, editing</li>
+          <li><strong>💡 Tips & Edukasi</strong> (25%) — tips pose, panduan outfit, cara prepare sebelum foto</li>
+          <li><strong>💬 Social Proof</strong> (10%) — testimoni klien, screenshot chat puas</li>
+          <li><strong>🎁 Promosi</strong> (10%) — paket hemat, diskon, event khusus</li>
+        </ul>
+
+        <div class="tip">
+          <b>💡 Hashtag Strategy Instagram</b>
+          <p>Gunakan 15-20 hashtag per post, campuran:<br>
+          • 5 hashtag lokal: <code>#fotocikarang #fotobekasi #studiocikarang #wisudacikarang #goldenstudio</code><br>
+          • 5 hashtag niche: <code>#fotowisuda #fotoprofil #fotoproduk #studiofoto #fotograferprofesional</code><br>
+          • 5 hashtag populer: <code>#wisuda2026 #fotografi #jasafoto #fotoshoot #portofolio</code></p>
+        </div>
+
+        <h4>✅ Social Media Checklist</h4>
+        <ul class="checklist" data-chapter="social">
+          <li data-id="sm-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Setup/makeup Instagram Business + link ke website</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="sm-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Setup/makeup TikTok + link ke website di bio</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="sm-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Upload 10 foto portofolio terbaik ke Instagram + buat highlights</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="sm-4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Post 1 konten Instagram/TikTok per minggu (mulai dari portofolio)</span><span class="cl-tag should">Penting</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 9: CONTENT CALENDAR ===== -->
+    <div class="chapter" id="ch-calendar">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(167,139,250,.15);color:var(--violet)">9</div>
+        <div class="ch-info"><h3>Kalender Konten 3 Bulan</h3><p>Rencana konten praktis — tinggal ikuti jadwal</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>📅 Template Kalender Konten</h4>
+        <p>Copy-paste tabel ini ke spreadsheet Anda. Isi setiap minggu dengan konten spesifik.</p>
+
+        <div class="template-block"><span class="cm">// KALENDER KONTEN — Golden Studio (contoh 4 minggu pertama)</span>
+
+<span class="hl">MINGGU 1</span>
+  Senin:    📝 Blog — "10 Tips Foto Profil LinkedIn yang Profesional"
+  Selasa:   📸 IG Post — Before/after foto profil klien
+  Rabu:     🎬 TikTok — Behind the scenes syuting foto profil
+  Kamis:    📝 GBP Post — Promo paket foto profil
+  Jumat:    📸 IG Story — Tips singkat (outfit, pencahayaan)
+  Sabtu:    💬 FB Post — Share blog ke komunitas Cikarang
+  Minggu:   📊 Review performa — cek dashboard GSC
+
+<span class="hl">MINGGU 2</span>
+  Senin:    📝 Blog — "Panduan Lengkap Foto Wisuda 2026"
+  Selasa:   📸 IG Reel — Transformasi wisuda (before/after)
+  Rabu:     🎬 TikTok — Tips pose wisuda yang photogenic
+  Kamis:    📝 GBP Post — Galeri foto wisuda terbaru
+  Jumat:    📸 IG Post — Testimoni screenshot dari klien wisuda
+  Sabtu:    💬 WhatsApp Broadcast — Promo paket wisuda
+  Minggu:   📊 Review performa — cek dashboard GSC
+
+<span class="hl">MINGGU 3</span>
+  Senin:    📝 Blog — "Studio Foto Terbaik di Cikarang"
+  Selasa:   📸 IG Post — Tour studio (interior, backdrop)
+  Rabu:     🎬 TikTok — Behind the scenes setup studio
+  Kamis:    📝 GBP Post — Galeri interior studio
+  Jumat:    📸 IG Story — Polling: backdrop mana favorit?
+  Sabtu:    💬 FB Post — Promo weekend/last minute
+  Minggu:   📊 Review performa — cek dashboard GSC
+
+<span class="hl">MINGGU 4</span>
+  Senin:    📝 Blog — "Cara Pose saat Foto Keluarga"
+  Selasa:   📸 IG Post — Hasil foto keluarga (portofolio)
+  Rabu:     🎬 TikTok — Tips foto keluarga dengan anak kecil
+  Kamis:    📝 GBP Post — Paket foto keluarga
+  Jumat:    📸 IG Post — Testimoni klien keluarga
+  Sabtu:    💬 Email/WhatsApp — Newsletter bulanan
+  Minggu:   📊 Review performa + rencana bulan depan</div>
+
+        <div class="tip">
+          <b>💡 Konsistensi &gt; Perfect</b>
+          <p>Lebih baik posting konten "cukup bagus" secara rutin daripada konten "sempurna" tapi jarang. Konsistensi = Google & audiens percaya bisnis aktif.</p>
+        </div>
+
+        <h4>✅ Calendar Checklist</h4>
+        <ul class="checklist" data-chapter="calendar">
+          <li data-id="cc-1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Buat spreadsheet kalender konten 4 minggu pertama</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="cc-2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Siapkan konten minggu 1 sekarang (judul + outline)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="cc-3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Setup reminder/notifikasi untuk jadwal posting</span><span class="cl-tag should">Penting</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 10: MEASUREMENT ===== -->
+    <div class="chapter" id="ch-measurement">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(52,211,153,.15);color:var(--green)">10</div>
+        <div class="ch-info"><h3>Pengukuran & Analisis</h3><p>Pantau progress, hitung ROI, optimasi berkelanjutan</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>📊 Metrik yang Harus Dipantau</h4>
+        <table class="doc-table">
+          <tr><th>Metrik</th><th>Tool</th><th>Frekuensi</th><th>Target</th></tr>
+          <tr><td><strong>Klik organik</strong></td><td>GSC Dashboard ini</td><td>Mingguan</td><td>+20% per bulan</td></tr>
+          <tr><td><strong>Tayangan</strong></td><td>GSC Dashboard ini</td><td>Mingguan</td><td>+30% per bulan</td></tr>
+          <tr><td><strong>CTR</strong></td><td>GSC Dashboard ini</td><td>Mingguan</td><td>&gt;3%</td></tr>
+          <tr><td><strong>Posisi rata-rata</strong></td><td>GSC Dashboard ini</td><td>Mingguan</td><td>&lt;5 untuk keyword utama</td></tr>
+          <tr><td><strong>Review Google</strong></td><td>Google Business</td><td>Bulanan</td><td>+5 review/bulan</td></tr>
+          <tr><td><strong>Traffic website</strong></td><td>Google Analytics</td><td>Mingguan</td><td>+15% per bulan</td></tr>
+          <tr><td><strong>WhatsApp inquiry</strong></td><td>Manual / CRM</td><td>Mingguan</td><td>+20% per bulan</td></tr>
+        </table>
+
+        <h4>📅 Jadwal Review</h4>
+        <ul>
+          <li><strong>Mingguan (Senin)</strong> — Cek GSC dashboard: klik, tayangan, posisi minggu lalu</li>
+          <li><strong>Bulanan (1 bulan)</strong> — Review keyword top, halaman top, ctr per halaman</li>
+          <li><strong>Quarterly (3 bulan)</strong> — Review ROI: berapa inquiry dari SEO vs biaya yang dikeluarkan</li>
+        </ul>
+
+        <h4>📈 Cara Membaca Dashboard Ini</h4>
+        <ul>
+          <li><strong>Tab Kueri</strong> → filter untuk cari keyword dengan 100+ tayangan tapi CTR &lt;2% — itu potensi optimasi</li>
+          <li><strong>Tab Halaman</strong> → cari halaman dengan banyak tayangan tapi posisi &gt;10 — perlu perkuat konten</li>
+          <li><strong>Tab Negara</strong> → pastikan traffic utama dari Indonesia (target lokal)</li>
+          <li><strong>Tab Perangkat</strong> → jika mobile &gt;70%, pastikan mobile experience sempurna</li>
+        </ul>
+
+        <div class="tip">
+          <b>💡 SEO Butuh Waktu</b>
+          <p>SEO bukan sprint — ini marathon. Hasil biasanya terlihat dalam <strong>3-6 bulan</strong>. Jangan berhenti di bulan 1 karena belum ada perubahan signifikan. Konsistensi adalah kunci.</p>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 11: TEMPLATES ===== -->
+    <div class="chapter" id="ch-templates">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(34,211,238,.15);color:var(--cyan)">11</div>
+        <div class="ch-info"><h3>Template & Tools Siap Pakai</h3><p>Template keyword, audit, kalender — tinggal copy-paste</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <h4>📋 Template: Keyword Mapping</h4>
+        <div class="template-block"><span class="cm">// Copy ke Google Sheets. Isi 1 baris per keyword target.</span>
+
+| <span class="hl">Keyword</span>       | <span class="gr">Volume</span> | <span class="am">KD</span> | <span class="hl">Intent</span>         | <span class="gr">Halaman Target</span>       | <span class="am">Status</span>   |
+|----------------|---------|------|-----------------|----------------------|-----------|
+| foto wisuda cikarang | 200 | Mudah | Transactional | /layanan/foto-wisuda | Belum    |
+| studio foto bekasi   | 500 | Sedang| Local          | /                    | Live     |
+| tips foto profil     | 300 | Mudah | Informational  | /blog/tips-profil    | Belum    |</div>
+
+        <h4>📋 Template: Kompetitor Analysis</h4>
+        <div class="template-block"><span class="cm">// Bandingkan Golden Studio dengan 3 pesaing utama.</span>
+
+| <span class="hl">Aspek</span>              | <span class="gr">Golden Studio</span> | <span class="am">Pesaing 1</span> | <span class="hl">Pesaing 2</span> |
+|-------------------|---------------|------------|-----------|
+| Website speed     |               |            |           |
+| Jumlah konten     |               |            |           |
+| Google review     |               |            |           |
+| Keyword ranking   |               |            |           |
+| Social followers  |               |            |           |
+| Harga rata-rata   |               |            |           |</div>
+
+        <h4>📋 Template: Blog Post Outline</h4>
+        <div class="template-block"><span class="cm">// Setiap blog post harus punya outline ini sebelum menulis.</span>
+
+<span class="hl">Judul:</span> [Keyword utama + angle menarik]
+<span class="gr">Target keyword:</span> [keyword utama]
+<span class="am">Secondary keywords:</span> [2-3 keyword turunan]
+<span class="hl">Search intent:</span> [Informational/Transactional]
+
+<span class="gr">Outline:</span>
+<span class="hl">H1:</span> [Judul sesuai target keyword]
+  <span class="am">H2:</span> Pendahuluan (apa yang dibahas, untuk siapa)
+  <span class="am">H2:</span> [Sub-topik 1] — jawab "People Also Ask"
+    <span class="cm">H3:</span> [Detail]
+  <span class="am">H2:</span> [Sub-topik 2] — tips atau panduan
+    <span class="cm">H3:</span> [Detail]
+  <span class="am">H2:</span> [Sub-topik 3] — contoh/case study
+  <span class="am">H2:</span> FAQ (3-5 pertanyaan umum)
+  <span class="am">H2:</span> CTA — ajak bertindak (booking, hubungi)
+
+<span class="gr">CTA:</span> WhatsApp 0851-5520-2151 | goldenstudio.odoo.com</div>
+
+        <h4>🔧 Tools Gratis untuk SEO</h4>
+        <table class="doc-table">
+          <tr><th>Tool</th><th>Fungsi</th><th>Link</th></tr>
+          <tr><td><strong>Google Search Console</strong></td><td>Monitor performa pencarian</td><td>search.google.com/search-console</td></tr>
+          <tr><td><strong>Google Analytics 4</strong></td><td>Traffic & behavior</td><td>analytics.google.com</td></tr>
+          <tr><td><strong>Google Keyword Planner</strong></td><td>Riset volume keyword</td><td>ads.google.com/aw/keywordplanner</td></tr>
+          <tr><td><strong>Ubersuggest</strong></td><td>Keyword research (3 gratis/hari)</td><td>neilpatel.com/ubersuggest</td></tr>
+          <tr><td><strong>PageSpeed Insights</strong></td><td>Cek kecepatan website</td><td>pagespeed.web.dev</td></tr>
+          <tr><td><strong>Canva</strong></td><td>Desain grafis (thumbnail, post)</td><td>canva.com</td></tr>
+          <tr><td><strong>TinyPNG</strong></td><td>Compress gambar online</td><td>tinypng.com</td></tr>
+        </table>
+      </div></div>
+    </div>
+
+    <!-- ===== CHAPTER 12: MASTER CHECKLIST ===== -->
+    <div class="chapter" id="ch-checklist">
+      <div class="chapter-head" onclick="toggleChapter(this)">
+        <div class="ch-num" style="background:rgba(59,130,246,.15);color:var(--blue)">✓</div>
+        <div class="ch-info"><h3>Master Checklist — Ringkasan Semua Bab</h3><p>Semua tugas wajib di satu tempat — track progres Anda</p></div>
+        <div class="ch-toggle">▼</div>
+      </div>
+      <div class="chapter-body"><div class="chapter-content">
+        <p>Checklist ini mengumpulkan semua item <strong>Wajib</strong> dari setiap bab. Centang satu per satu. Progres tersimpan otomatis.</p>
+
+        <h4>🔴 Bulan 1 — Fondasi (Wajib Selesai)</h4>
+        <ul class="checklist" data-chapter="master1">
+          <li data-id="m1" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Audit GSC: export data, identifikasi top 10 kueri</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m2" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Google Business Profile: klaim, verifikasi, lengkapi 100%</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m3" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">GBP: upload 25+ foto</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m4" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">On-Page: title tag + meta description unik untuk semua halaman</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m5" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">On-Page: struktur heading benar (H1-H3)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m6" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Technical: gambar di-compress ke WebP, max 200KB</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m7" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Technical: website responsif di HP asli</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m8" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Technical: HTTPS aktif</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m9" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Keyword: daftar 20-30 keyword target + kategorikan</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m10" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">NAP konsisten di semua platform</span><span class="cl-tag must">Wajib</span></li>
+        </ul>
+
+        <h4>🟡 Bulan 2 — Konten & Distribusi</h4>
+        <ul class="checklist" data-chapter="master2">
+          <li data-id="m11" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Tulis & publish 4 blog post (1/minggu)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m12" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Minta review Google dari 10 klien</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m13" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Instagram/TikTok: post 8 konten (2/minggu)</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="m14" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">GBP: post 4x (1/minggu)</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="m15" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Daftar di 5 direktori lokal</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m16" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Waze for Business: daftar & verifikasi</span><span class="cl-tag should">Penting</span></li>
+        </ul>
+
+        <h4>🟢 Bulan 3 — Optimasi & Skala</h4>
+        <ul class="checklist" data-chapter="master3">
+          <li data-id="m17" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Optimasi 5 kueri dengan tayangan tinggi + CTR rendah (update judul/meta)</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m18" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Minta backlink dari 3 klien/partner</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="m19" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Hubungi 2 wedding organizer untuk tukar link</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="m20" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Review & update konten lama berdasarkan performa GSC</span><span class="cl-tag must">Wajib</span></li>
+          <li data-id="m21" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Analisis kompetitor: bandingkan GBP, review, konten</span><span class="cl-tag should">Penting</span></li>
+          <li data-id="m22" onclick="toggleCheck(this)"><span class="cl-check"></span><span class="cl-text">Buat laporan bulanan 3: bandingkan klik, tayangan, CTR bulan 1 vs 3</span><span class="cl-tag must">Wajib</span></li>
+        </ul>
+
+        <div class="tip">
+          <b>💡 Tracking Otomatis</b>
+          <p>Progres checklist ini tersimpan di browser Anda (localStorage). Centang item yang sudah selesai — progress bar di sidebar akan ter-update. Tidak perlu akun atau login.</p>
+        </div>
+      </div></div>
+    </div>
+
+  </div><!-- .content -->
+</div><!-- .main -->
+
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+/* ===== Sidebar active highlight ===== */
+const navLinks = document.querySelectorAll('#sidebarNav a');
+const chapters = document.querySelectorAll('.chapter');
+
+function updateActiveNav(){
+  let current = '';
+  chapters.forEach(ch=>{
+    const rect = ch.getBoundingClientRect();
+    if(rect.top < 200) current = ch.id;
+  });
+  navLinks.forEach(a=>{
+    a.classList.toggle('active', a.getAttribute('href')==='#'+current);
+  });
+}
+window.addEventListener('scroll', updateActiveNav, {passive:true});
+
+/* ===== Chapter toggle ===== */
+function toggleChapter(head){
+  head.closest('.chapter').classList.toggle('open');
+  updateProgress();
+}
+
+/* ===== Checklist ===== */
+function toggleCheck(li){
+  li.classList.toggle('done');
+  const ic = li.querySelector('.cl-check');
+  ic.textContent = li.classList.contains('done') ? '✓' : '';
+  saveChecklist();
+  updateProgress();
+}
+
+function saveChecklist(){
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li=>{
+    state[li.dataset.id] = li.classList.contains('done');
+  });
+  localStorage.setItem('seo-playbook-checklist', JSON.stringify(state));
+}
+
+function loadChecklist(){
+  try{
+    const state = JSON.parse(localStorage.getItem('seo-playbook-checklist')||'{}');
+    document.querySelectorAll('.checklist li').forEach(li=>{
+      if(state[li.dataset.id]){
+        li.classList.add('done');
+        li.querySelector('.cl-check').textContent = '✓';
+      }
+    });
+  }catch(e){}
+}
+
+function resetChecklist(){
+  if(!confirm('Reset semua progres checklist?')) return;
+  document.querySelectorAll('.checklist li').forEach(li=>{
+    li.classList.remove('done');
+    li.querySelector('.cl-check').textContent = '';
+  });
+  localStorage.removeItem('seo-playbook-checklist');
+  updateProgress();
+}
+
+function updateProgress(){
+  const all = document.querySelectorAll('.checklist li');
+  const done = document.querySelectorAll('.checklist li.done');
+  const pct = all.length ? Math.round(done.length/all.length*100) : 0;
+  document.getElementById('progressBar').style.width = pct+'%';
+  document.getElementById('progressText').textContent = pct+'% ('+done.length+'/'+all.length+')';
+}
+
+/* ===== Search ===== */
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', function(){
+  const q = this.value.trim().toLowerCase();
+  document.querySelectorAll('.chapter').forEach(ch=>{
+    if(!q){
+      ch.style.display = '';
+      // restore original open state
+      return;
+    }
+    const text = ch.textContent.toLowerCase();
+    const match = text.includes(q);
+    ch.style.display = match ? '' : 'none';
+    if(match) ch.classList.add('open');
+  });
+});
+
+/* ===== Keyboard shortcut ===== */
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key==='k'){
+    e.preventDefault();
+    searchInput.focus();
+  }
+});
+
+/* ===== Mobile menu ===== */
+function checkMobile(){
+  const btn = document.getElementById('menuBtn');
+  btn.style.display = window.innerWidth <= 860 ? '' : 'none';
+}
+window.addEventListener('resize', checkMobile);
+checkMobile();
+
+/* ===== Init ===== */
+loadChecklist();
+updateProgress();
+updateActiveNav();
+</script>
+
+</body>
+</html>
