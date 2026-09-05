@@ -1,105 +1,72 @@
-# 🚀 Panduan Deploy Dashboard SEO ke Cloudflare Pages (via GitHub)
+# 🚀 Panduan Deploy SEO Dashboard — Lokal (Laragon) & Cloudflare
 
-Dibuat: 5 Sep 2026 · Repo: `github.com/prject-csduosejoli/dasaahboard-seo-golden`
+## Ringkasan
+Dashboard SEO Golden Studio kini punya **2 mode**:
 
-Dashboard SEO Anda sudah di GitHub (repo `dasaahboard-seo-golden`). Sekarang tinggal sambungkan ke **Cloudflare Pages** — gratis, otomatis ter-deploy tiap kali push, dan dapat domain `*.pages.dev`.
+| Mode | URL | Kemampuan |
+|---|---|---|
+| **Lokal (Laragon)** — full | `http://seo-dashboard.test/` | Login server + database MySQL + import xlsx + ganti password |
+| **Cloudflare Pages** — statis | `https://dasaahboard-seo-golden.pages.dev/` | Read-only (snapshot data), tanpa login |
 
 ---
 
-## ⚡ Cara TERCEPAT (rekomendasi) — Cloudflare Pages via GitHub
+## A. Deploy Lokal (Laragon) — PRIMARY
 
-### Langkah 1 — Login ke Cloudflare
-1. Buka **https://dash.cloudflare.com** di browser (login akun Cloudflare Anda).
-   - Belum punya akun? Daftar gratis di https://dash.cloudflare.com/sign-up
+### Prasyarat
+- Laragon terinstall, Apache + MySQL **started**
+- Ekstensi PHP: `pdo_mysql` aktif (default Laragon)
 
-### Langkah 2 — Masuk ke Cloudflare Pages
-2. Klik menu **Workers & Pages** di sidebar kiri.
-3. Klik **Create** (tombol biru, kanan atas) → pilih tab **Pages** → **Connect to Git**.
+### Langkah
+1. Copy folder `seo-dashboard` ke `C:\laragon\www\`
+   ```
+   C:\laragon\www\seo-dashboard\
+   ├── index.html
+   └── api\*.php
+   ```
+2. Pastikan **MySQL** aktif (Laragon → Start All)
+3. Buka `http://seo-dashboard.test/` (hosts sudah diisi `127.0.0.1 seo-dashboard.test`)
+   - Atau `http://localhost/seo-dashboard/`
 
-### Langkah 3 — Hubungkan GitHub
-4. Klik **Connect to GitHub** (jika belum terhubung, ikuti otorisasi GitHub → Allow/Authorize).
-5. Pilih repo: **`prject-csduosejoli/dasaahboard-seo-golden`**
-6. Klik **Begin setup**.
+### Database
+Sudah otomatis ada: `seo_dashboard` (user `root`, tanpa password).
+Jika di komputer lain: `mysql -u root < schema.sql` (schema.sql ada di repo).
 
-### Langkah 4 — Seting Build (ini PENTING)
-| Field | Isi |
+---
+
+## B. Deploy ke Cloudflare Pages — READ-ONLY
+
+### Prasyarat
+- Repo GitHub: `prject-csduosejoli/dasaahboard-seo-golden`
+- Project CF Pages: `dasaahboard-seo-golden` (Connect to Git)
+
+### Langkah
+1. Push ke GitHub → auto-deploy ke CF Pages
+2. `index.html` di root → tampil di `https://dasaahboard-seo-golden.pages.dev/`
+3. Versi CF **otomatis mode offline** (deteksi tidak ada `/api/`) → tampil read-only dengan snapshot data
+
+> ⚠️ File `api/*.php` ikut ke repo tapi **tidak dieksekusi** di CF Pages (statis-only). Tidak masalah — JS fallback ke mode offline.
+
+### Kalau mau CF full-stack (login + DB): butuh Cloudflare Workers + D1/KV + R2 — hubungi developer.
+
+---
+
+## C. Update Data Bulanan
+
+1. GSC → Performance → periode → **Ekspor → Excel**
+2. Buka `http://seo-dashboard.test/` → login
+3. **Pengaturan → Impor Data GSC** → tarik file
+4. Otomatis masuk DB, dashboard ter-update
+5. (Opsional) export snapshot baru ke index.html agar CF ikut update:
+   - Jalankan script konversi (lihat `README` / minta developer)
+
+---
+
+## D. Troubleshooting
+
+| Gejala | Solusi |
 |---|---|
-| **Project name** | `dashboard-seo-golden` (bebas, lowercase) |
-| **Production branch** | `main` |
-| **Framework preset** | **None** (statis) |
-| **Build command** | *(kosongkan)* |
-| **Build output directory** | **`/`** (root — file HTML langsung di sana) |
-
-> Karena ini file HTML statis, tidak perlu build. Output directory = root.
-
-7. Klik **Save and Deploy**.
-
-### Langkah 5 — Selesai! 🎉
-8. Tunggu ±1 menit → status **Success**.
-9. URL situs Anda: **`https://dashboard-seo-golden.pages.dev`**
-   (bisa dilihat di halaman project → tab **Deployments**)
-
----
-
-## 🔄 Update bulan depan (cukup sekali ini saja)
-
-Setiap kali file dashboard di-update:
-```bash
-cd "D:\DATA SUPPORT\seo\dashboard"
-git add dashboard-seo-golden.html
-git commit -m "update dashboard"
-git push origin main
-```
-Cloudflare Pages **otomatis** build & deploy versi baru — tanpa buka dashboard Cloudflare lagi.
-
----
-
-## 🌐 (Opsional) Pakai Domain Sendiri
-
-Kalau mau `dashboard.goldenstudio.id` atau subdomain lain:
-1. Di project Pages → tab **Custom domains** → **Set up a custom domain**.
-2. Masukkan subdomain → ikuti verifikasi (tambah CNAME di DNS Cloudflare).
-3. Selesai — akses via domain Anda.
-
----
-
-## 🛠️ Alternatif: Deploy via Wrangler CLI (tanpa buka dashboard web)
-
-Kalau prefer pakai terminal (butuh **token API Cloudflare**):
-
-```bash
-# 1) Login sekali
-npx wrangler login
-
-# 2) Dari folder dashboard
-cd "/d/DATA SUPPORT/seo/dashboard"
-npx wrangler pages deploy . --project-name dashboard-seo-golden
-
-# (opsional) kalau belum ada project, buat dulu:
-npx wrangler pages project create dashboard-seo-golden --production-branch main
-```
-
-> Catatan: `wrangler login` membuka browser untuk otorisasi. Setelah login sekali, token tersimpan di `~/.wrangler`.
-
----
-
-## ❓ Troubleshooting
-
-| Masalah | Solusi |
-|---|---|
-| **Build failed / 404** | Pastikan "Build output directory" = `/` dan **Build command kosong** |
-| **File tidak muncul** | Cek nama file: harus `dashboard-seo-golden.html` (bukan `index.html`) — akses via `https://<project>.pages.dev/dashboard-seo-golden.html`. Kalau mau root `/` langsung tampil, rename file jadi `index.html` lalu push lagi |
-| **Login GitHub gagal** | Di dashboard Cloudflare → Workers & Pages → masih "Connect to GitHub" → klik tombol hijau "Connect GitHub" lagi |
-| **Domain tidak aktif** | Pastikan DNS Cloudflare **orange cloud ON** (proxy) |
-| **Push ditolak** | `git pull origin main --rebase` dulu, lalu push lagi |
-
----
-
-## 📌 Ringkasan
-
-- **Repo:** `github.com/prject-csduosejoli/dasaahboard-seo-golden.git`
-- **Deploy:** Cloudflare Pages (connect Git, output root, no build)
-- **URL hasil:** `https://dashboard-seo-golden.pages.dev`
-- **Update:** cukup `git push` — sisanya otomatis
-
-Selamat, dashboard SEO Golden Studio Anda akan tayang online! 🚀
+| `http://seo-dashboard.test/` tidak terbuka | Laragon → Start All; cek Apache running |
+| Login "Koneksi gagal" | Pastikan MySQL aktif |
+| Data lama (tidak update setelah impor) | Refresh halaman (Ctrl+F5) |
+| Lupa password | `mysql -u root seo_dashboard` → update `users` (lihat PANDUAN-DATABASE-LOKAL.md) |
+| CF Pages tampil Hello World | Pastikan file bernama `index.html` di root repo |
