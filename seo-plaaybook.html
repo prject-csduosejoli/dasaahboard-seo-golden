@@ -195,15 +195,42 @@
 
     /* Print */
     @media print {
+      @page {
+        size: A4; margin: 15mm 13mm 16mm;
+        @top-left { content: "SEO Playbook — Golden Studio"; font-size: 9px; color: #888; }
+        @top-right { content: "www.goldenstudio.id"; font-size: 9px; color: #888; }
+        @bottom-center { content: "Halaman " counter(page) " dari " counter(pages); font-size: 9px; color: #888; }
+        @bottom-right { content: "© " counter(year, decimal); font-size: 9px; color: #888; }
+      }
       body { background: #fff; color: #222; }
-      .sidebar, .header, .ch-toggle, .btn { display: none !important; }
+      .sidebar, .header, .ch-toggle, .btn, .search-box { display: none !important; }
       .main { margin-left: 0; }
-      .chapter { border: 1px solid #ddd; page-break-inside: avoid; }
+      .chapter { border: 1px solid #ddd; page-break-inside: avoid; margin-bottom: 14px; }
+      .chapter-head { padding: 10px 14px; }
+      .chapter-head .ch-num { width: 26px; height: 26px; font-size: 12px; border-radius: 7px; }
       .chapter-body { max-height: none !important; }
-      .chapter-content { color: #444; }
+      .chapter-content { padding: 2px 14px 12px; color: #444; }
+      .chapter-content h4 { color: #0b6bcb; }
       .chapter-content strong, .chapter-head h3 { color: #000; }
       .chapter-content p, .chapter-content li { color: #444; }
+      .tip { break-inside: avoid; }
+      table { break-inside: avoid; }
+      /* Print cover page */
+      .print-cover {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        height: 100vh; text-align: center; page-break-after: always;
+      }
+      .print-cover .pc-badge { font-size: 56px; }
+      .print-cover h1 { font-size: 32px; color: #000; margin: 16px 0 8px; }
+      .print-cover p { color: #555; font-size: 14px; max-width: 460px; line-height: 1.6; }
+      .print-cover .pc-meta { margin-top: 30px; font-size: 12px; color: #888; }
+      .print-cover .pc-line { width: 60px; height: 3px; background: #0b6bcb; border-radius: 2px; margin: 14px auto; }
+      /* Cover page: no header/footer */
+      .print-cover { page: cover; }
+      @page cover { margin: 0; }
     }
+    /* Screen: hide print-only elements */
+    .print-cover { display: none; }
 
     /* Highlight search */
     mark { background: rgba(245,158,11,.3); color: var(--text1); border-radius: 2px; padding: 0 2px; }
@@ -241,12 +268,21 @@
 
 <!-- ========== MAIN ========== -->
 <div class="main">
+  <!-- Print-only cover page -->
+  <div class="print-cover">
+    <div class="pc-badge">📘</div>
+    <h1>SEO Playbook</h1>
+    <div class="pc-line"></div>
+    <p>Panduan lengkap strategi SEO &amp; konten untuk meningkatkan traffic dan peringkat pencarian Golden Studio, Cikarang.</p>
+    <div class="pc-meta">goldenstudio.id · SEO Dashboard Golden Studio</div>
+  </div>
+
   <div class="header">
     <button class="btn btn-ghost" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none" id="menuBtn">☰</button>
     <h1>📘 SEO Playbook — Golden Studio</h1>
     <input type="text" class="search-box" placeholder="🔍 Cari topik... (Ctrl+K)" id="searchInput">
-    <button class="btn btn-ghost" onclick="window.print()">🖨 Print</button>
-    <button class="btn btn-primary" onclick="resetChecklist()">↻ Reset</button>
+    <button class="btn btn-primary" onclick="downloadPDF()">⬇ Download PDF</button>
+    <button class="btn btn-ghost" onclick="resetChecklist()">↻ Reset</button>
   </div>
 
   <div class="content">
@@ -1023,6 +1059,17 @@ function loadChecklist(){
       }
     });
   }catch(e){}
+}
+
+function downloadPDF(){
+  // Buka semua chapter agar isinya lengkap di PDF, lalu panggil dialog print
+  document.querySelectorAll('.chapter').forEach(ch=>ch.classList.add('open'));
+  if (window.matchMedia('print').addEventListener) {
+    window.matchMedia('print').addEventListener('change', function mql(e){
+      if(!e.matches){ window.matchMedia('print').removeEventListener('change', mql); }
+    });
+  }
+  setTimeout(()=>window.print(), 50);
 }
 
 function resetChecklist(){
