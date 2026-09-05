@@ -71,7 +71,7 @@ if (!empty($data['countries'])) {
 if (!empty($data['devices'])) {
     $stmt = $db->prepare("INSERT INTO devices (d, clk, imp, ctr, pos) VALUES (?,?,?,?,?)");
     foreach ($data['devices'] as $r) {
-        $stmt->execute([$r['q'], $r['clk'], $r['imp'], $r['ctr'], $r['pos']]);
+        $stmt->execute([$r['d'] ?? ($r['q'] ?? ''), $r['clk'] ?? 0, $r['imp'] ?? 0, $r['ctr'] ?? 0, $r['pos'] ?? 0]);
     }
 }
 
